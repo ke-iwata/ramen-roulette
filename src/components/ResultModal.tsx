@@ -8,6 +8,9 @@ interface Props {
   onRespin?: () => void
   onBack?: () => void
   onClose: () => void
+  /** マップから開いたときは候補への追加/解除を出す */
+  selected?: boolean
+  onToggleSelect?: () => void
 }
 
 // なると(回転する渦巻き)
@@ -32,6 +35,8 @@ export default function ResultModal({
   onRespin,
   onBack,
   onClose,
+  selected,
+  onToggleSelect,
 }: Props) {
   const img = gymImageUrl(gym, 640)
 
@@ -77,6 +82,15 @@ export default function ResultModal({
               <span className="meta-chip">🚶 駅から徒歩{gym.walk}分</span>
             )}
           </div>
+
+          {onToggleSelect && (
+            <button
+              className={`btn btn-pick ${selected ? 'picked' : ''}`}
+              onClick={onToggleSelect}
+            >
+              {selected ? '✓ 候補に入っています(外す)' : '＋ ルーレットの候補に追加'}
+            </button>
+          )}
 
           <a
             className="btn btn-eat"

@@ -13,21 +13,24 @@ import {
 
 interface Props {
   gyms: Gym[]
+  selectedIds: string[]
   onSelect: (gym: Gym) => void
   onBack: () => void
+  onConfirm: () => void
 }
 
 const CENTER: [number, number] = [35.6935, 139.8755]
 
 // 写真をそのままピンにする(円形サムネ + 下向きの尻尾)
-function pinIcon(gym: Gym, color: string) {
+function pinIcon(gym: Gym, color: string, picked: boolean) {
   const img = gymImageUrl(gym, 96)
   const inner = img
     ? `<img src="${img}" alt="" loading="lazy" />`
     : `<span class="pin-fallback">${gym.name.charAt(0)}</span>`
+  const check = picked ? '<b class="pin-check">✓</b>' : ''
   return L.divIcon({
     className: 'ramen-pin-wrap',
-    html: `<div class="ramen-pin" style="--pin:${color}">${inner}<i class="pin-tail"></i></div>`,
+    html: `<div class="ramen-pin ${picked ? 'picked' : 'unpicked'}" style="--pin:${color}">${inner}${check}<i class="pin-tail"></i></div>`,
     iconSize: [46, 54],
     iconAnchor: [23, 54],
   })
@@ -45,7 +48,13 @@ function clusterIcon(cluster: L.MarkerCluster) {
   })
 }
 
-export default function MapView({ gyms, onSelect, onBack }: Props) {
+export default function MapView({
+  gyms,
+  selectedIds,
+  onSelect,
+  onBack,
+  onConfirm,
+}: Props) {
   const holderRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
@@ -61,6 +70,7 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
   )
   const shownRef = useRef(shown)
   shownRef.current = shown
+  const picked = useMemo(() => new Set(selectedIds), [selectedIds])
 
   // 地図の初期化(一度だけ)
   useEffect(() => {
@@ -140,12 +150,12 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
     const markers = shown.map((gym) => {
       const color = CHAIN_COLORS[gym.chain ?? ''] ?? CUSTOM_CHAIN_COLOR
       return L.marker([gym.lat!, gym.lng!], {
-        icon: pinIcon(gym, color),
+        icon: pinIcon(gym, color, picked.has(gym.id)),
         title: gym.name,
       }).on('click', () => onSelect(gym))
     })
     cluster.addLayers(markers)
-  }, [shown, onSelect])
+  }, [shown, picked, onSelect])
 
   // 駅を選んだときだけ寄る(初回とピン再生成では動かさない)
   useEffect(() => {
@@ -192,8 +202,22 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
       <div className="map-holder" ref={holderRef} />
 
       <p className="map-hint">
-        まとまった数字をタップすると開きます。ダブルタップしたまま下になぞるとズーム。
+        ピンをタップして候補に追加できます。まとまった数字はタップで開き、
+        ダブルタップしたまま下になぞるとズームします。
       </p>
+
+      <div className="confirm-bar">
+        <span className="confirm-count">{selectedIds.length} 件選択中</span>
+        <button
+          className="btn btn-primary"
+          onClick={onConfirm}
+          disabled={selectedIds.length < 2}
+        >
+          {selectedIds.length >= 2
+            ? '候補を確定してルーレットへ'
+            : '2件以上選んでください'}
+        </button>
+      </div>
     </section>
   )
 }

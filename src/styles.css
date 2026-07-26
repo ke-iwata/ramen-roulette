@@ -1080,3 +1080,56 @@ body {
 .ramen-cluster:hover {
   transform: scale(1.08);
 }
+
+/* 候補に入っているピン / 入っていないピン */
+.ramen-pin.unpicked {
+  filter: grayscale(0.75) brightness(0.92);
+  opacity: 0.75;
+}
+
+.ramen-pin.picked {
+  border-width: 4px;
+  box-shadow: 0 0 0 2px #fff, 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.pin-check {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--pin, #c1272d);
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid #fff;
+}
+
+.btn-pick {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  border: 2px dashed #c1272d;
+  background: #fff;
+  color: #c1272d;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 11px 16px;
+}
+
+.btn-pick:hover {
+  background: #fff2f2;
+}
+
+.btn-pick.picked {
+  border-style: solid;
+  background: #f3ece1;
+  border-color: #7a6a58;
+  color: #5b4a42;
+}
+
+.mapview .confirm-bar {
+  margin-top: 4px;
+}

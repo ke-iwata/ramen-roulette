@@ -82,7 +82,7 @@ export default function App() {
       <header className="header">
         <h1>ラーメンルーレット</h1>
         <p className="tagline">江戸川区近辺のラーメン屋をルーレットで決めよう</p>
-        {screen !== 'map' && (
+        {screen === 'select' && (
           <button className="btn btn-maplink" onClick={openMap}>
             🗺 マップで一覧を見る
           </button>
@@ -90,7 +90,16 @@ export default function App() {
       </header>
 
       {screen === 'map' ? (
-        <MapView gyms={allGyms} onSelect={setDetail} onBack={closeMap} />
+        <MapView
+          gyms={allGyms}
+          selectedIds={selectedIds}
+          onSelect={setDetail}
+          onBack={closeMap}
+          onConfirm={() => {
+            if (location.hash === '#/map') location.hash = ''
+            confirm()
+          }}
+        />
       ) : screen === 'select' ? (
         <GymSelector
           gyms={allGyms}
@@ -116,6 +125,8 @@ export default function App() {
         <ResultModal
           gym={detail}
           lead="この一杯"
+          selected={selectedIds.includes(detail.id)}
+          onToggleSelect={() => toggle(detail.id)}
           onClose={() => setDetail(null)}
         />
       )}
