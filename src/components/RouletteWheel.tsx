@@ -76,8 +76,20 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
   return (
     <section className="roulette">
       <div className="stage">
+        <div className="stage-noren" aria-hidden>
+          <span>ラ</span>
+          <span>ー</span>
+          <span>メ</span>
+          <span>ン</span>
+        </div>
+        <div className="stage-lantern left" aria-hidden>
+          <span className="lantern-text">麺</span>
+        </div>
+        <div className="stage-lantern right" aria-hidden>
+          <span className="lantern-text">丼</span>
+        </div>
         <div className="stage-marker" aria-hidden>
-          ▼
+          <span className="chopsticks">🥢</span>
         </div>
         <div className="carousel-viewport">
           <div
@@ -119,7 +131,10 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
                   </div>
                   <div className="carousel-label">
                     <span className="carousel-name">{gym.name}</span>
-                    <span className="carousel-area">{gym.area}</span>
+                    <span className="carousel-area">
+                      {gym.area}
+                      {gym.rating && ` ★${gym.rating}`}
+                    </span>
                   </div>
                 </div>
               )
