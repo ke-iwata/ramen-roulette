@@ -398,22 +398,22 @@ body {
   box-shadow:
     inset 0 0 70px rgba(0, 0, 0, 0.55),
     0 12px 36px rgba(50, 20, 10, 0.4);
-  padding: 92px 0 34px;
+  padding: 96px 0 42px;
   overflow: hidden;
 }
 
-/* 雷紋(らいもん)の帯 */
+/* 雷紋(らいもん)の帯 — 角を内へ巻き込む回り雷文 */
 .stage::before,
 .stage::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  height: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M2 12V4h8v6h4V2h10' fill='none' stroke='%23f2d9a0' stroke-width='2'/%3E%3C/svg%3E");
-  background-size: 28px 14px;
+  height: 22px;
+  background-color: #8f1d1d;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='44'%20height='22'%20viewBox='0%200%2044%2022'%3E%3Cpath%20d='M0%2019.5h44M5%2019.5V4.5h30v10H17.5v-5H27'%20fill='none'%20stroke='%23f2d9a0'%20stroke-width='3'%20stroke-linecap='square'/%3E%3C/svg%3E");
+  background-size: 44px 22px;
   background-repeat: repeat-x;
-  opacity: 0.85;
   z-index: 3;
   pointer-events: none;
 }
@@ -430,7 +430,7 @@ body {
 /* 上部の暖簾 */
 .stage-noren {
   position: absolute;
-  top: 14px;
+  top: 22px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
