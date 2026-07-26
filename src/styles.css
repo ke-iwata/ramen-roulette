@@ -452,65 +452,18 @@ body {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 
-/* 赤提灯 */
-.stage-lantern {
-  position: absolute;
-  top: 20px;
-  width: 38px;
-  height: 52px;
-  border-radius: 50% / 42%;
-  background: repeating-linear-gradient(
-    #d93b34 0 6px,
-    #c1272d 6px 7px
-  );
-  box-shadow:
-    0 0 22px rgba(255, 150, 80, 0.55),
-    inset -6px 0 12px rgba(0, 0, 0, 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  animation: lanternSway 4s ease-in-out infinite;
-}
-
-.stage-lantern.left {
-  left: 16px;
-}
-
-.stage-lantern.right {
-  right: 16px;
-  animation-delay: 1.4s;
-}
-
-.lantern-text {
-  color: #fff2dd;
-  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-}
-
-@keyframes lanternSway {
-  0%, 100% {
-    transform: rotate(-4deg);
-  }
-  50% {
-    transform: rotate(4deg);
-  }
-}
-
 .stage-marker {
   position: absolute;
-  top: 46px;
+  top: 44px;
   left: 50%;
+  width: 0;
+  height: 0;
   transform: translateX(-50%);
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 14px solid #f2d9a0;
   z-index: 4;
-  font-size: 22px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
-}
-
-.chopsticks {
-  display: inline-block;
-  transform: rotate(180deg);
 }
 
 .carousel-viewport {

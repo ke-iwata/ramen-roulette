@@ -82,15 +82,7 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
           <span>メ</span>
           <span>ン</span>
         </div>
-        <div className="stage-lantern left" aria-hidden>
-          <span className="lantern-text">麺</span>
-        </div>
-        <div className="stage-lantern right" aria-hidden>
-          <span className="lantern-text">丼</span>
-        </div>
-        <div className="stage-marker" aria-hidden>
-          <span className="chopsticks">🥢</span>
-        </div>
+        <div className="stage-marker" aria-hidden />
         <div className="carousel-viewport">
           <div
             className="carousel-ring"
