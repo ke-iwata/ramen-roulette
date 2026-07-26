@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
 import {
   CHAIN_COLORS,
   CUSTOM_CHAIN_COLOR,
@@ -31,12 +33,24 @@ function pinIcon(gym: Gym, color: string) {
   })
 }
 
+// 近い店をまとめたときの丼形バッジ
+function clusterIcon(cluster: L.MarkerCluster) {
+  const n = cluster.getChildCount()
+  const size = n < 10 ? 42 : n < 50 ? 50 : 58
+  return L.divIcon({
+    className: 'ramen-cluster-wrap',
+    html: `<div class="ramen-cluster" style="width:${size}px;height:${size}px">${n}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  })
+}
+
 export default function MapView({ gyms, onSelect, onBack }: Props) {
   const holderRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const layerRef = useRef<L.LayerGroup | null>(null)
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
   const [station, setStation] = useState('all')
-  const [visibleCount, setVisibleCount] = useState(0)
+  const firstRun = useRef(true)
 
   const shown = useMemo(
     () =>
@@ -45,6 +59,8 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
       ),
     [gyms, station],
   )
+  const shownRef = useRef(shown)
+  shownRef.current = shown
 
   // 地図の初期化(一度だけ)
   useEffect(() => {
@@ -52,60 +68,100 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
     const map = L.map(holderRef.current, {
       center: CENTER,
       zoom: 13,
+      zoomSnap: 0,
+      zoomDelta: 0.5,
       zoomControl: true,
     })
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map)
-    layerRef.current = L.layerGroup().addTo(map)
+
+    const cluster = L.markerClusterGroup({
+      maxClusterRadius: 55,
+      showCoverageOnHover: false,
+      spiderfyDistanceMultiplier: 1.6,
+      iconCreateFunction: clusterIcon,
+    })
+    map.addLayer(cluster)
+    clusterRef.current = cluster
     mapRef.current = map
+
+    // ダブルタップしたまま下へなぞるとズーム(上へなぞると引く)
+    const el = map.getContainer()
+    let lastTap = 0
+    let zooming = false
+    let startY = 0
+    let startZoom = 13
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      const now = Date.now()
+      if (now - lastTap < 320) {
+        zooming = true
+        startY = e.touches[0].clientY
+        startZoom = map.getZoom()
+        map.dragging.disable()
+        e.preventDefault()
+      }
+      lastTap = now
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (!zooming || e.touches.length !== 1) return
+      const dy = e.touches[0].clientY - startY
+      map.setZoom(Math.min(19, Math.max(11, startZoom + dy / 55)), {
+        animate: false,
+      })
+      e.preventDefault()
+    }
+    const onTouchEnd = () => {
+      if (!zooming) return
+      zooming = false
+      map.dragging.enable()
+    }
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+
     return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
       map.remove()
       mapRef.current = null
+      clusterRef.current = null
     }
   }, [])
 
-  // 表示範囲内の店だけピンを描く(全件描くと重いため)
+  // ピンを差し替える(クラスタが表示範囲を管理するので全件渡してよい)
   useEffect(() => {
-    const map = mapRef.current
-    const layer = layerRef.current
-    if (!map || !layer) return
-
-    const render = () => {
-      const bounds = map.getBounds().pad(0.2)
-      const inView = shown.filter((g) => bounds.contains([g.lat!, g.lng!]))
-      layer.clearLayers()
-      for (const gym of inView.slice(0, 160)) {
-        const color = CHAIN_COLORS[gym.chain ?? ''] ?? CUSTOM_CHAIN_COLOR
-        L.marker([gym.lat!, gym.lng!], {
-          icon: pinIcon(gym, color),
-          title: gym.name,
-        })
-          .addTo(layer)
-          .on('click', () => onSelect(gym))
-      }
-      setVisibleCount(inView.length)
-    }
-
-    render()
-    map.on('moveend zoomend', render)
-    return () => {
-      map.off('moveend zoomend', render)
-    }
+    const cluster = clusterRef.current
+    if (!cluster) return
+    cluster.clearLayers()
+    const markers = shown.map((gym) => {
+      const color = CHAIN_COLORS[gym.chain ?? ''] ?? CUSTOM_CHAIN_COLOR
+      return L.marker([gym.lat!, gym.lng!], {
+        icon: pinIcon(gym, color),
+        title: gym.name,
+      }).on('click', () => onSelect(gym))
+    })
+    cluster.addLayers(markers)
   }, [shown, onSelect])
 
-  // 駅を選んだらその駅へ寄る
+  // 駅を選んだときだけ寄る(初回とピン再生成では動かさない)
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
+    if (firstRun.current) {
+      firstRun.current = false
+      return
+    }
     if (station === 'all') {
       map.setView(CENTER, 13)
       return
     }
-    const pts = shown.map((g) => [g.lat!, g.lng!] as [number, number])
+    const pts = shownRef.current.map((g) => [g.lat!, g.lng!] as [number, number])
     if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.25))
-  }, [station, shown])
+  }, [station])
 
   return (
     <section className="mapview">
@@ -118,7 +174,9 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
           value={station}
           onChange={(e) => setStation(e.target.value)}
         >
-          <option value="all">すべての駅({gyms.filter((g) => g.lat).length}店)</option>
+          <option value="all">
+            すべての駅({gyms.filter((g) => g.lat).length}店)
+          </option>
           {LINES.map((line) => (
             <optgroup key={line.name} label={line.name}>
               {line.stations.map((s) => (
@@ -134,8 +192,7 @@ export default function MapView({ gyms, onSelect, onBack }: Props) {
       <div className="map-holder" ref={holderRef} />
 
       <p className="map-hint">
-        ピンをタップすると店の情報が見られます(この範囲に {visibleCount} 店
-        {visibleCount > 160 && ' / 表示は160店まで'})
+        まとまった数字をタップすると開きます。ダブルタップしたまま下になぞるとズーム。
       </p>
     </section>
   )

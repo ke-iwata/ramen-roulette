@@ -1054,3 +1054,29 @@ body {
 .ramen-pin-wrap .pin-tail {
   z-index: -1;
 }
+
+/* まとまったピン(丼形のバッジ) */
+.ramen-cluster-wrap {
+  background: none;
+  border: none;
+}
+
+.ramen-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d9433a, #a81f24);
+  border: 3px solid #f2d9a0;
+  color: #fff5e6;
+  font-weight: 800;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+
+.ramen-cluster:hover {
+  transform: scale(1.08);
+}

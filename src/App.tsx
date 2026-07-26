@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DEFAULT_GYMS, type Gym } from './data/gyms'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import GymSelector from './components/GymSelector'
@@ -41,7 +41,7 @@ export default function App() {
     else setScreen('select')
   }
 
-  const allGyms = [...DEFAULT_GYMS, ...customGyms]
+  const allGyms = useMemo(() => [...DEFAULT_GYMS, ...customGyms], [customGyms])
   const customGymIds = new Set(customGyms.map((g) => g.id))
 
   const toggle = (id: string) => {
