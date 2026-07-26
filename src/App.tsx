@@ -37,6 +37,15 @@ export default function App() {
     setSelectedIds((prev) => prev.filter((x) => x !== id))
   }
 
+  // 路線・駅単位のまとめて選択/解除
+  const setMany = (ids: string[], on: boolean) => {
+    setSelectedIds((prev) => {
+      if (on) return [...new Set([...prev, ...ids])]
+      const drop = new Set(ids)
+      return prev.filter((x) => !drop.has(x))
+    })
+  }
+
   const confirm = () => {
     const chosen = allGyms.filter((g) => selectedIds.includes(g.id))
     if (chosen.length < 2) return
@@ -60,6 +69,7 @@ export default function App() {
           onDeselectAll={() => setSelectedIds([])}
           onAddGym={addGym}
           onRemoveGym={removeGym}
+          onSetMany={setMany}
           customGymIds={customGymIds}
           onConfirm={confirm}
         />

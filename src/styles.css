@@ -91,35 +91,109 @@ body {
   font-size: 1.15rem;
 }
 
-.chain-section {
-  margin-bottom: 18px;
+.line-section {
+  border: 1px solid #e2e6f0;
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 10px;
+  overflow: hidden;
 }
 
-.chain-header {
+.line-header,
+.station-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
-.chain-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--chain);
-  align-self: center;
+.line-header {
+  background: color-mix(in srgb, var(--chain) 10%, #fff);
+  border-left: 4px solid var(--chain);
+  padding-right: 10px;
 }
 
-.chain-name {
+.line-toggle,
+.station-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 12px 10px;
+}
+
+.line-name {
   font-weight: 700;
-  font-size: 0.92rem;
-  letter-spacing: 0.02em;
+  font-size: 0.95rem;
 }
 
+.line-count,
 .chain-count {
   font-size: 0.78rem;
   color: #8892a8;
   font-variant-numeric: tabular-nums;
+}
+
+.caret {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--chain);
+  transition: transform 0.15s;
+}
+
+.caret.open {
+  transform: rotate(90deg);
+}
+
+.mini-btn {
+  border: 1px solid #dde2ee;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.76rem;
+  font-family: inherit;
+  color: #667;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mini-btn:hover {
+  border-color: var(--chain);
+  color: var(--chain);
+}
+
+.station-section {
+  border-top: 1px solid #eef1f8;
+}
+
+.station-header {
+  padding-right: 10px;
+}
+
+.station-toggle {
+  padding: 10px 10px 10px 22px;
+}
+
+.chain-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--chain);
+  flex-shrink: 0;
+}
+
+.chain-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.station-section .card-grid {
+  padding: 4px 12px 14px;
 }
 
 .card-grid {

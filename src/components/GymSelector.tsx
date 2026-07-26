@@ -3,6 +3,7 @@ import {
   CHAIN_COLORS,
   CUSTOM_CHAIN,
   CUSTOM_CHAIN_COLOR,
+  LINES,
   gymImageUrl,
   type Gym,
 } from '../data/gyms'
@@ -15,14 +16,15 @@ interface Props {
   onDeselectAll: () => void
   onAddGym: (name: string, area: string) => void
   onRemoveGym: (id: string) => void
+  onSetMany: (ids: string[], selected: boolean) => void
   customGymIds: Set<string>
   onConfirm: () => void
 }
 
-interface Section {
-  chain: string
+interface Group {
+  line: string
   color: string
-  gyms: Gym[]
+  stations: { station: string; gyms: Gym[] }[]
 }
 
 export default function GymSelector({
@@ -33,28 +35,58 @@ export default function GymSelector({
   onDeselectAll,
   onAddGym,
   onRemoveGym,
+  onSetMany,
   customGymIds,
   onConfirm,
 }: Props) {
   const [newName, setNewName] = useState('')
   const [newArea, setNewArea] = useState('')
+  const [openLines, setOpenLines] = useState<Set<string>>(
+    () => new Set(LINES.map((l) => l.name)),
+  )
+  const [openStations, setOpenStations] = useState<Set<string>>(() => new Set())
 
   const selected = new Set(selectedIds)
   const canConfirm = selectedIds.length >= 2
 
-  const sections: Section[] = []
+  // 路線 → 駅 の順にグルーピング。どの路線にも属さない駅と追加店は「その他」へ
+  const byStation = new Map<string, Gym[]>()
   for (const gym of gyms) {
-    const chain = gym.chain ?? CUSTOM_CHAIN
-    let section = sections.find((s) => s.chain === chain)
-    if (!section) {
-      section = {
-        chain,
-        color: CHAIN_COLORS[chain] ?? CUSTOM_CHAIN_COLOR,
-        gyms: [],
-      }
-      sections.push(section)
-    }
-    section.gyms.push(gym)
+    const key = gym.chain ?? CUSTOM_CHAIN
+    const list = byStation.get(key)
+    if (list) list.push(gym)
+    else byStation.set(key, [gym])
+  }
+
+  const groups: Group[] = []
+  const used = new Set<string>()
+  for (const line of LINES) {
+    const stations = line.stations
+      .filter((s) => byStation.has(s))
+      .map((s) => {
+        used.add(s)
+        return { station: s, gyms: byStation.get(s)! }
+      })
+    if (stations.length) groups.push({ ...line, line: line.name, stations })
+  }
+  const leftovers = [...byStation.keys()].filter((s) => !used.has(s))
+  if (leftovers.length) {
+    groups.push({
+      line: 'その他',
+      color: CUSTOM_CHAIN_COLOR,
+      stations: leftovers.map((s) => ({ station: s, gyms: byStation.get(s)! })),
+    })
+  }
+
+  const toggleSet = (
+    set: Set<string>,
+    setter: (s: Set<string>) => void,
+    key: string,
+  ) => {
+    const next = new Set(set)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    setter(next)
   }
 
   const handleAdd = () => {
@@ -79,77 +111,159 @@ export default function GymSelector({
         </div>
       </div>
 
-      {sections.map(({ chain, color, gyms: chainGyms }) => {
-        const count = chainGyms.filter((g) => selected.has(g.id)).length
+      {groups.map((group) => {
+        const lineGyms = group.stations.flatMap((s) => s.gyms)
+        const lineCount = lineGyms.filter((g) => selected.has(g.id)).length
+        const lineOpen = openLines.has(group.line)
         return (
           <div
-            key={chain}
-            className="chain-section"
-            style={{ '--chain': color } as CSSProperties}
+            key={group.line}
+            className="line-section"
+            style={{ '--chain': group.color } as CSSProperties}
           >
-            <div className="chain-header">
-              <span className="chain-dot" aria-hidden />
-              <span className="chain-name">{chain}</span>
-              <span className="chain-count">
-                {count}/{chainGyms.length}
+            <div className="line-header">
+              <button
+                type="button"
+                className="line-toggle"
+                aria-expanded={lineOpen}
+                onClick={() => toggleSet(openLines, setOpenLines, group.line)}
+              >
+                <span className={`caret ${lineOpen ? 'open' : ''}`} aria-hidden>
+                  ▶
+                </span>
+                <span className="line-name">{group.line}</span>
+                <span className="line-count">
+                  {lineCount}/{lineGyms.length}
+                </span>
+              </button>
+              <span className="group-actions">
+                <button
+                  type="button"
+                  className="mini-btn"
+                  onClick={() =>
+                    onSetMany(
+                      lineGyms.map((g) => g.id),
+                      lineCount < lineGyms.length,
+                    )
+                  }
+                >
+                  {lineCount < lineGyms.length ? '全選択' : '全解除'}
+                </button>
               </span>
             </div>
-            <div className="card-grid">
-              {chainGyms.map((gym) => {
-                const checked = selected.has(gym.id)
-                const img = gymImageUrl(gym)
+
+            {lineOpen &&
+              group.stations.map(({ station, gyms: stationGyms }) => {
+                const key = `${group.line}/${station}`
+                const count = stationGyms.filter((g) => selected.has(g.id)).length
+                const open = openStations.has(key)
+                const color = CHAIN_COLORS[station] ?? CUSTOM_CHAIN_COLOR
                 return (
-                  <button
-                    key={gym.id}
-                    type="button"
-                    className={`gym-card ${checked ? 'checked' : ''}`}
-                    aria-pressed={checked}
-                    onClick={() => onToggle(gym.id)}
+                  <div
+                    key={key}
+                    className="station-section"
+                    style={{ '--chain': color } as CSSProperties}
                   >
-                    <span className="card-media">
-                      <span className="card-placeholder" aria-hidden>
-                        {gym.name.charAt(0)}
-                      </span>
-                      {img && (
-                        <img
-                          src={img}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      )}
-                      <span className="card-check" aria-hidden>
-                        ✓
-                      </span>
-                      {customGymIds.has(gym.id) && (
+                    <div className="station-header">
+                      <button
+                        type="button"
+                        className="station-toggle"
+                        aria-expanded={open}
+                        onClick={() =>
+                          toggleSet(openStations, setOpenStations, key)
+                        }
+                      >
                         <span
-                          className="card-remove"
-                          role="button"
-                          title="この店を削除"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onRemoveGym(gym.id)
-                          }}
+                          className={`caret ${open ? 'open' : ''}`}
+                          aria-hidden
                         >
-                          ×
+                          ▶
                         </span>
-                      )}
-                    </span>
-                    <span className="card-body">
-                      <span className="card-name">{gym.name}</span>
-                      <span className="card-area">
-                        {gym.area}
-                        {gym.rating && (
-                          <span className="card-rating">★ {gym.rating}</span>
-                        )}
+                        <span className="chain-dot" aria-hidden />
+                        <span className="chain-name">{station}</span>
+                        <span className="chain-count">
+                          {count}/{stationGyms.length}
+                        </span>
+                      </button>
+                      <span className="group-actions">
+                        <button
+                          type="button"
+                          className="mini-btn"
+                          onClick={() =>
+                            onSetMany(
+                              stationGyms.map((g) => g.id),
+                              count < stationGyms.length,
+                            )
+                          }
+                        >
+                          {count < stationGyms.length ? '全選択' : '全解除'}
+                        </button>
                       </span>
-                    </span>
-                  </button>
+                    </div>
+
+                    {open && (
+                      <div className="card-grid">
+                        {stationGyms.map((gym) => {
+                          const checked = selected.has(gym.id)
+                          const img = gymImageUrl(gym)
+                          return (
+                            <button
+                              key={gym.id}
+                              type="button"
+                              className={`gym-card ${checked ? 'checked' : ''}`}
+                              aria-pressed={checked}
+                              onClick={() => onToggle(gym.id)}
+                            >
+                              <span className="card-media">
+                                <span className="card-placeholder" aria-hidden>
+                                  {gym.name.charAt(0)}
+                                </span>
+                                {img && (
+                                  <img
+                                    src={img}
+                                    alt=""
+                                    loading="lazy"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                )}
+                                <span className="card-check" aria-hidden>
+                                  ✓
+                                </span>
+                                {customGymIds.has(gym.id) && (
+                                  <span
+                                    className="card-remove"
+                                    role="button"
+                                    title="この店を削除"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      onRemoveGym(gym.id)
+                                    }}
+                                  >
+                                    ×
+                                  </span>
+                                )}
+                              </span>
+                              <span className="card-body">
+                                <span className="card-name">{gym.name}</span>
+                                <span className="card-area">
+                                  {gym.area}
+                                  {gym.rating && (
+                                    <span className="card-rating">
+                                      ★ {gym.rating}
+                                    </span>
+                                  )}
+                                </span>
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
-            </div>
           </div>
         )
       })}

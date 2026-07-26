@@ -40,6 +40,31 @@ export const CHAIN_COLORS: Record<string, string> = {
 export const CUSTOM_CHAIN = '追加した店'
 export const CUSTOM_CHAIN_COLOR = '#5f6b85'
 
+// 路線 → 駅の並び(一覧の折り畳み表示に使用)
+export interface Line {
+  name: string
+  color: string
+  stations: string[]
+}
+
+export const LINES: Line[] = [
+  {
+    name: 'JR総武線',
+    color: '#f7822b',
+    stations: ['錦糸町', '亀戸', '平井', '新小岩', '小岩', '本八幡'],
+  },
+  {
+    name: '東京メトロ東西線',
+    color: '#4361ee',
+    stations: ['葛西', '西葛西'],
+  },
+  {
+    name: '都営新宿線',
+    color: '#06a77d',
+    stations: ['船堀', '一之江', '瑞江', '篠崎'],
+  },
+]
+
 // 2026年7月時点のGoogleマップ検索結果(ラーメン+各駅)から取得した店舗一覧。
 // 閉業表示の店舗は除外済み。評価・写真もGoogleマップのもの。
 export const DEFAULT_GYMS: Gym[] = [
