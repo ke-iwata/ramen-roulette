@@ -398,7 +398,7 @@ body {
   box-shadow:
     inset 0 0 70px rgba(0, 0, 0, 0.55),
     0 12px 36px rgba(50, 20, 10, 0.4);
-  padding: 60px 0 34px;
+  padding: 92px 0 34px;
   overflow: hidden;
 }
 
@@ -434,36 +434,22 @@ body {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 2px;
+  gap: 3px;
   z-index: 3;
 }
 
 .stage-noren span {
   display: block;
-  width: 30px;
-  padding: 4px 0 10px;
+  width: 54px;
+  padding: 10px 0 22px;
   background: linear-gradient(#c1272d, #9d1f24);
   color: #fff5e6;
   font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   text-align: center;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
-}
-
-.stage-marker {
-  position: absolute;
-  top: 44px;
-  left: 50%;
-  width: 0;
-  height: 0;
-  transform: translateX(-50%);
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 14px solid #f2d9a0;
-  z-index: 4;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .carousel-viewport {

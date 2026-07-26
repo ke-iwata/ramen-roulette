@@ -82,7 +82,6 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
           <span>メ</span>
           <span>ン</span>
         </div>
-        <div className="stage-marker" aria-hidden />
         <div className="carousel-viewport">
           <div
             className="carousel-ring"
