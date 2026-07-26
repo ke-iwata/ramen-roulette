@@ -41,6 +41,7 @@ export default function GymSelector({
 }: Props) {
   const [newName, setNewName] = useState('')
   const [newArea, setNewArea] = useState('')
+  const [query, setQuery] = useState('')
   const [openLines, setOpenLines] = useState<Set<string>>(
     () => new Set(LINES.map((l) => l.name)),
   )
@@ -49,13 +50,26 @@ export default function GymSelector({
   const selected = new Set(selectedIds)
   const canConfirm = selectedIds.length >= 2
 
+  const q = query.trim().toLowerCase()
+  const searching = q.length > 0
+  const visible = searching
+    ? gyms.filter(
+        (g) =>
+          g.name.toLowerCase().includes(q) || (g.area ?? '').includes(query.trim()),
+      )
+    : gyms
+
   // 路線 → 駅 の順にグルーピング。どの路線にも属さない駅と追加店は「その他」へ
+  const collator = new Intl.Collator('ja')
   const byStation = new Map<string, Gym[]>()
-  for (const gym of gyms) {
+  for (const gym of visible) {
     const key = gym.chain ?? CUSTOM_CHAIN
     const list = byStation.get(key)
     if (list) list.push(gym)
     else byStation.set(key, [gym])
+  }
+  for (const list of byStation.values()) {
+    list.sort((a, b) => collator.compare(a.name, b.name))
   }
 
   const groups: Group[] = []
@@ -111,10 +125,52 @@ export default function GymSelector({
         </div>
       </div>
 
+      <div className="search-box">
+        <span className="search-icon" aria-hidden>
+          🔍
+        </span>
+        <input
+          type="search"
+          placeholder="店名・駅名で絞り込み(例: 二郎、家系、亀戸)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {searching && (
+          <>
+            <span className="search-hits">{visible.length} 件</span>
+            <button
+              type="button"
+              className="mini-btn"
+              onClick={() =>
+                onSetMany(
+                  visible.map((g) => g.id),
+                  visible.some((g) => !selected.has(g.id)),
+                )
+              }
+            >
+              {visible.some((g) => !selected.has(g.id))
+                ? '該当を全選択'
+                : '該当を全解除'}
+            </button>
+            <button
+              type="button"
+              className="mini-btn"
+              onClick={() => setQuery('')}
+            >
+              クリア
+            </button>
+          </>
+        )}
+      </div>
+
+      {searching && visible.length === 0 && (
+        <p className="no-hits">「{query}」に一致する店が見つかりません</p>
+      )}
+
       {groups.map((group) => {
         const lineGyms = group.stations.flatMap((s) => s.gyms)
         const lineCount = lineGyms.filter((g) => selected.has(g.id)).length
-        const lineOpen = openLines.has(group.line)
+        const lineOpen = searching || openLines.has(group.line)
         return (
           <div
             key={group.line}
@@ -156,7 +212,7 @@ export default function GymSelector({
               group.stations.map(({ station, gyms: stationGyms }) => {
                 const key = `${group.line}/${station}`
                 const count = stationGyms.filter((g) => selected.has(g.id)).length
-                const open = openStations.has(key)
+                const open = searching || openStations.has(key)
                 const color = CHAIN_COLORS[station] ?? CUSTOM_CHAIN_COLOR
                 return (
                   <div
@@ -248,10 +304,14 @@ export default function GymSelector({
                               <span className="card-body">
                                 <span className="card-name">{gym.name}</span>
                                 <span className="card-area">
-                                  {gym.area}
                                   {gym.rating && (
                                     <span className="card-rating">
                                       ★ {gym.rating}
+                                    </span>
+                                  )}
+                                  {gym.walk != null && (
+                                    <span className="card-walk">
+                                      🚶 徒歩{gym.walk}分
                                     </span>
                                   )}
                                 </span>
