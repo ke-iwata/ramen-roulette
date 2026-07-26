@@ -139,7 +139,12 @@ export default function GymSelector({
                     </span>
                     <span className="card-body">
                       <span className="card-name">{gym.name}</span>
-                      <span className="card-area">{gym.area}</span>
+                      <span className="card-area">
+                        {gym.area}
+                        {gym.rating && (
+                          <span className="card-rating">★ {gym.rating}</span>
+                        )}
+                      </span>
                     </span>
                   </button>
                 )

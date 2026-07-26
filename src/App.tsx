@@ -8,9 +8,9 @@ import ResultModal from './components/ResultModal'
 type Screen = 'select' | 'roulette'
 
 export default function App() {
-  const [customGyms, setCustomGyms] = useLocalStorage<Gym[]>('ramen:v1:customShops', [])
+  const [customGyms, setCustomGyms] = useLocalStorage<Gym[]>('ramen:v2:customShops', [])
   const [selectedIds, setSelectedIds] = useLocalStorage<string[]>(
-    'ramen:v1:selectedIds',
+    'ramen:v2:selectedIds',
     DEFAULT_GYMS.map((g) => g.id),
   )
   const [screen, setScreen] = useState<Screen>('select')

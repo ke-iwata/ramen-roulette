@@ -577,3 +577,16 @@ body {
     text-align: center;
   }
 }
+
+/* ---- rating badges ---- */
+.card-rating {
+  margin-left: 6px;
+  color: #e8a30e;
+  font-weight: 700;
+}
+
+.modal-rating {
+  margin-left: 10px;
+  color: #e8a30e;
+  font-weight: 700;
+}

@@ -14,14 +14,28 @@ interface Props {
 
 const CARD_WIDTH = 200
 const SPIN_MS = 5000
+// リングに並べる最大枚数。候補が多い場合は演出用に間引く
+// (抽選は常に全候補から行い、当選店はリングに必ず含める)
+const MAX_RING = 24
+
+function sampleRing(gyms: Gym[]): Gym[] {
+  if (gyms.length <= MAX_RING) return gyms
+  const shuffled = [...gyms]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled.slice(0, MAX_RING)
+}
 
 export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [winnerId, setWinnerId] = useState<string | null>(null)
+  const [ring, setRing] = useState<Gym[]>(() => sampleRing(gyms))
   const timerRef = useRef<number | null>(null)
 
-  const n = gyms.length
+  const n = ring.length
   const step = 360 / n
   // カードが重ならないリング半径(少人数のときは最低値を確保)
   const radius = Math.max(
@@ -34,8 +48,15 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
     setSpinning(true)
     setWinnerId(null)
 
-    const winnerIndex = Math.floor(Math.random() * n)
-    const winner = gyms[winnerIndex]
+    // 抽選は全候補から
+    const winner = gyms[Math.floor(Math.random() * gyms.length)]
+    let currentRing = ring
+    if (!currentRing.some((g) => g.id === winner.id)) {
+      currentRing = [...currentRing]
+      currentRing[Math.floor(Math.random() * currentRing.length)] = winner
+      setRing(currentRing)
+    }
+    const winnerIndex = currentRing.findIndex((g) => g.id === winner.id)
 
     // 当選カードが正面(角度0)に来る回転角。常に負方向へ数周させる
     const desired = -winnerIndex * step
@@ -68,7 +89,7 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
                 : 'none',
             }}
           >
-            {gyms.map((gym, i) => {
+            {ring.map((gym, i) => {
               const img = gymImageUrl(gym)
               const color =
                 CHAIN_COLORS[gym.chain ?? ''] ?? CUSTOM_CHAIN_COLOR

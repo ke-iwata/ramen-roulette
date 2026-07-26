@@ -1,4 +1,4 @@
-import { gymImageUrl, type Gym } from '../data/gyms'
+import { gymImageUrl, gymMapsUrl, type Gym } from '../data/gyms'
 
 interface Props {
   gym: Gym
@@ -8,9 +8,6 @@ interface Props {
 }
 
 export default function ResultModal({ gym, onRespin, onBack, onClose }: Props) {
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${gym.name} ${gym.area}`,
-  )}`
   const img = gymImageUrl(gym, 640)
 
   return (
@@ -29,8 +26,19 @@ export default function ResultModal({ gym, onRespin, onBack, onClose }: Props) {
         )}
         <p className="modal-lead">🍜 今日のラーメンは…</p>
         <p className="modal-gym">{gym.name}</p>
-        {gym.area && <p className="modal-area">📍 {gym.area}</p>}
+        <p className="modal-area">
+          📍 {gym.area}
+          {gym.rating && <span className="modal-rating">★ {gym.rating}</span>}
+        </p>
         <div className="modal-links">
+          <a
+            className="btn btn-outline"
+            href={gymMapsUrl(gym)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Googleマップで見る(営業時間・公式情報)
+          </a>
           {gym.url && (
             <a
               className="btn btn-outline"
@@ -38,27 +46,9 @@ export default function ResultModal({ gym, onRespin, onBack, onClose }: Props) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {gym.url.includes('tabelog.com') ? '食べログ' : '公式サイト'}
+              お店のページ
             </a>
           )}
-          {gym.instagram && (
-            <a
-              className="btn btn-outline"
-              href={`https://www.instagram.com/${gym.instagram}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram
-            </a>
-          )}
-          <a
-            className="btn btn-outline"
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            営業時間・料金 (Googleマップ)
-          </a>
         </div>
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={onRespin}>
