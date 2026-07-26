@@ -2,8 +2,11 @@ import { gymImageUrl, gymMapsUrl, type Gym } from '../data/gyms'
 
 interface Props {
   gym: Gym
-  onRespin: () => void
-  onBack: () => void
+  /** 暖簾に出す見出し(ルーレット結果とマップ閲覧で出し分ける) */
+  lead?: string
+  /** ルーレット結果のときだけ「もう一杯」を出す */
+  onRespin?: () => void
+  onBack?: () => void
   onClose: () => void
 }
 
@@ -23,14 +26,20 @@ function Naruto() {
   )
 }
 
-export default function ResultModal({ gym, onRespin, onBack, onClose }: Props) {
+export default function ResultModal({
+  gym,
+  lead = '本日の一杯',
+  onRespin,
+  onBack,
+  onClose,
+}: Props) {
   const img = gymImageUrl(gym, 640)
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal ramen-modal" onClick={(e) => e.stopPropagation()}>
         <div className="noren">
-          <span className="noren-text">本日の一杯</span>
+          <span className="noren-text">{lead}</span>
         </div>
 
         <div className="bowl">
@@ -79,12 +88,20 @@ export default function ResultModal({ gym, onRespin, onBack, onClose }: Props) {
           </a>
 
           <div className="modal-actions">
-            <button className="btn btn-primary" onClick={onRespin}>
-              もう一杯まわす
-            </button>
-            <button className="btn btn-ghost" onClick={onBack}>
-              候補を選び直す
-            </button>
+            {onRespin && (
+              <button className="btn btn-primary" onClick={onRespin}>
+                もう一杯まわす
+              </button>
+            )}
+            {onBack ? (
+              <button className="btn btn-ghost" onClick={onBack}>
+                候補を選び直す
+              </button>
+            ) : (
+              <button className="btn btn-ghost" onClick={onClose}>
+                閉じる
+              </button>
+            )}
           </div>
         </div>
       </div>

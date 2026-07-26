@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DEFAULT_GYMS, type Gym } from './data/gyms'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import GymSelector from './components/GymSelector'
 import RouletteWheel from './components/RouletteWheel'
 import ResultModal from './components/ResultModal'
+import MapView from './components/MapView'
 
-type Screen = 'select' | 'roulette'
+type Screen = 'select' | 'roulette' | 'map'
 
 export default function App() {
   const [customGyms, setCustomGyms] = useLocalStorage<Gym[]>('ramen:v2:customShops', [])
@@ -13,9 +14,32 @@ export default function App() {
     'ramen:v2:selectedIds',
     DEFAULT_GYMS.map((g) => g.id),
   )
-  const [screen, setScreen] = useState<Screen>('select')
+  const [screen, setScreen] = useState<Screen>(() =>
+    location.hash === '#/map' ? 'map' : 'select',
+  )
   const [candidates, setCandidates] = useState<Gym[]>([])
   const [result, setResult] = useState<Gym | null>(null)
+  const [detail, setDetail] = useState<Gym | null>(null)
+
+  // マップ画面は #/map で表示。ブラウザの戻るでも一覧に戻れる
+  useEffect(() => {
+    const onHash = () => {
+      setScreen(location.hash === '#/map' ? 'map' : 'select')
+      setDetail(null)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  const openMap = () => {
+    location.hash = '#/map'
+    setScreen('map')
+  }
+
+  const closeMap = () => {
+    if (location.hash === '#/map') history.back()
+    else setScreen('select')
+  }
 
   const allGyms = [...DEFAULT_GYMS, ...customGyms]
   const customGymIds = new Set(customGyms.map((g) => g.id))
@@ -58,9 +82,16 @@ export default function App() {
       <header className="header">
         <h1>ラーメンルーレット</h1>
         <p className="tagline">江戸川区近辺のラーメン屋をルーレットで決めよう</p>
+        {screen !== 'map' && (
+          <button className="btn btn-maplink" onClick={openMap}>
+            🗺 マップで一覧を見る
+          </button>
+        )}
       </header>
 
-      {screen === 'select' ? (
+      {screen === 'map' ? (
+        <MapView gyms={allGyms} onSelect={setDetail} onBack={closeMap} />
+      ) : screen === 'select' ? (
         <GymSelector
           gyms={allGyms}
           selectedIds={selectedIds}
@@ -78,6 +109,14 @@ export default function App() {
           gyms={candidates}
           onResult={setResult}
           onBack={() => setScreen('select')}
+        />
+      )}
+
+      {detail && (
+        <ResultModal
+          gym={detail}
+          lead="この一杯"
+          onClose={() => setDetail(null)}
         />
       )}
 
