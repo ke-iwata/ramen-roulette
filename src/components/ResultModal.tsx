@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { gymImageUrl, gymMapsUrl, type Gym } from '../data/gyms'
 
 interface Props {
@@ -39,6 +40,15 @@ export default function ResultModal({
   onToggleSelect,
 }: Props) {
   const img = gymImageUrl(gym, 640)
+
+  // Esc でも閉じられるように
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -88,7 +98,7 @@ export default function ResultModal({
               className={`btn btn-pick ${selected ? 'picked' : ''}`}
               onClick={onToggleSelect}
             >
-              {selected ? '✓ 候補に入っています(外す)' : '＋ ルーレットの候補に追加'}
+              {selected ? '✓ 候補に入っています(外す)' : '＋ 候補に追加する'}
             </button>
           )}
 
@@ -98,13 +108,13 @@ export default function ResultModal({
             target="_blank"
             rel="noopener noreferrer"
           >
-            いただきます!(Googleマップを開く)
+            Googleマップで見る
           </a>
 
           <div className="modal-actions">
             {onRespin && (
               <button className="btn btn-primary" onClick={onRespin}>
-                もう一杯まわす
+                もう一度まわす
               </button>
             )}
             {onBack ? (

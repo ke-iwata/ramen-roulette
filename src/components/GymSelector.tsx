@@ -114,7 +114,7 @@ export default function GymSelector({
   return (
     <section className="selector">
       <div className="selector-header">
-        <h2>ラーメン屋候補を選ぶ</h2>
+        <h2>候補の店を選ぶ</h2>
         <div className="selector-actions">
           <button className="btn btn-ghost" onClick={onSelectAll}>
             すべて選択
@@ -125,13 +125,18 @@ export default function GymSelector({
         </div>
       </div>
 
+      <p className="section-note">
+        路線と駅ごとにまとまっています。駅名をタップすると店が開きます。
+      </p>
+
       <div className="search-box">
         <span className="search-icon" aria-hidden>
           🔍
         </span>
         <input
           type="search"
-          placeholder="店名・駅名で絞り込み(例: 二郎、家系、亀戸)"
+          placeholder="店名・駅名でしぼり込む"
+          aria-label="店名・駅名でしぼり込む"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -149,8 +154,8 @@ export default function GymSelector({
               }
             >
               {visible.some((g) => !selected.has(g.id))
-                ? '該当を全選択'
-                : '該当を全解除'}
+                ? '該当を選ぶ'
+                : '該当を外す'}
             </button>
             <button
               type="button"
@@ -328,10 +333,12 @@ export default function GymSelector({
         )
       })}
 
+      <p className="add-gym-title">リストにない店を追加する</p>
       <div className="add-gym">
         <input
           type="text"
-          placeholder="店名を追加(例: 近所の名店)"
+          placeholder="店名"
+          aria-label="追加する店名"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -339,7 +346,8 @@ export default function GymSelector({
         <input
           type="text"
           className="add-gym-area"
-          placeholder="エリア(任意)"
+          placeholder="駅・エリア(任意)"
+          aria-label="駅・エリア"
           value={newArea}
           onChange={(e) => setNewArea(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -350,9 +358,13 @@ export default function GymSelector({
       </div>
 
       <div className="confirm-bar">
-        <span className="confirm-count">{selectedIds.length} 件選択中</span>
+        <span className="confirm-count">
+          {canConfirm
+            ? `${selectedIds.length} 店を候補に`
+            : '2店以上えらぶと回せます'}
+        </span>
         <button className="btn btn-primary" onClick={onConfirm} disabled={!canConfirm}>
-          {canConfirm ? '候補を確定してルーレットへ' : '2件以上選んでください'}
+          ルーレットへ進む
         </button>
       </div>
     </section>

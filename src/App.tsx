@@ -20,6 +20,7 @@ export default function App() {
   const [candidates, setCandidates] = useState<Gym[]>([])
   const [result, setResult] = useState<Gym | null>(null)
   const [detail, setDetail] = useState<Gym | null>(null)
+  const [spinSignal, setSpinSignal] = useState(0)
 
   // マップ画面は #/map で表示。ブラウザの戻るでも一覧に戻れる
   useEffect(() => {
@@ -81,7 +82,9 @@ export default function App() {
     <div className="app">
       <header className="header">
         <h1>ラーメンルーレット</h1>
-        <p className="tagline">江戸川区近辺のラーメン屋をルーレットで決めよう</p>
+        <p className="tagline">
+          江戸川区まわりのラーメン屋から、今日の一杯を決めます
+        </p>
         {screen === 'select' && (
           <button className="btn btn-maplink" onClick={openMap}>
             🗺 マップから候補を探す
@@ -116,6 +119,7 @@ export default function App() {
       ) : (
         <RouletteWheel
           gyms={candidates}
+          spinSignal={spinSignal}
           onResult={setResult}
           onBack={() => setScreen('select')}
         />
@@ -134,7 +138,10 @@ export default function App() {
       {result && (
         <ResultModal
           gym={result}
-          onRespin={() => setResult(null)}
+          onRespin={() => {
+            setResult(null)
+            setSpinSignal((n) => n + 1)
+          }}
           onBack={() => {
             setResult(null)
             setScreen('select')

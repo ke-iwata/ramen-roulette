@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CHAIN_COLORS,
   CUSTOM_CHAIN_COLOR,
@@ -10,6 +10,8 @@ interface Props {
   gyms: Gym[]
   onResult: (gym: Gym) => void
   onBack: () => void
+  /** 結果画面の「もう一度まわす」から回すための合図 */
+  spinSignal?: number
 }
 
 const CARD_WIDTH = 200
@@ -28,12 +30,18 @@ function sampleRing(gyms: Gym[]): Gym[] {
   return shuffled.slice(0, MAX_RING)
 }
 
-export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
+export default function RouletteWheel({
+  gyms,
+  onResult,
+  onBack,
+  spinSignal = 0,
+}: Props) {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [winnerId, setWinnerId] = useState<string | null>(null)
   const [ring, setRing] = useState<Gym[]>(() => sampleRing(gyms))
   const timerRef = useRef<number | null>(null)
+  const spinRef = useRef<() => void>(() => {})
 
   const n = ring.length
   const step = 360 / n
@@ -72,6 +80,13 @@ export default function RouletteWheel({ gyms, onResult, onBack }: Props) {
       timerRef.current = window.setTimeout(() => onResult(winner), 900)
     }, SPIN_MS + 150)
   }
+
+  spinRef.current = spin
+
+  // 結果画面から「もう一度まわす」が押されたら回す
+  useEffect(() => {
+    if (spinSignal > 0) spinRef.current()
+  }, [spinSignal])
 
   return (
     <section className="roulette">

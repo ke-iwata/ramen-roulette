@@ -35,17 +35,17 @@ export interface Line {
 export const LINES: Line[] = [
   {
     name: 'JR総武線',
-    color: '#f7822b',
+    color: '#d8b12a',
     stations: ['錦糸町', '亀戸', '平井', '新小岩', '小岩', '本八幡'],
   },
   {
     name: '東京メトロ東西線',
-    color: '#4361ee',
+    color: '#2f9fc4',
     stations: ['西葛西', '葛西', '浦安', '南行徳', '行徳', '妙典'],
   },
   {
     name: '都営新宿線',
-    color: '#06a77d',
+    color: '#7ab648',
     stations: ['船堀', '一之江', '瑞江', '篠崎'],
   },
 ]

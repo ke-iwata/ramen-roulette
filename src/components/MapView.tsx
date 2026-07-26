@@ -181,6 +181,7 @@ export default function MapView({
         </button>
         <select
           className="station-select"
+          aria-label="駅でしぼり込む"
           value={station}
           onChange={(e) => setStation(e.target.value)}
         >
@@ -202,20 +203,23 @@ export default function MapView({
       <div className="map-holder" ref={holderRef} />
 
       <p className="map-hint">
-        ピンをタップして候補に追加できます。まとまった数字はタップで開き、
-        ダブルタップしたまま下になぞるとズームします。
+        ピンをタップすると店の詳細と候補への追加ができます。
+        <br />
+        数字はまとまった店の数です。タップで開きます。
       </p>
 
       <div className="confirm-bar">
-        <span className="confirm-count">{selectedIds.length} 件選択中</span>
+        <span className="confirm-count">
+          {selectedIds.length >= 2
+            ? `${selectedIds.length} 店を候補に`
+            : '2店以上えらぶと回せます'}
+        </span>
         <button
           className="btn btn-primary"
           onClick={onConfirm}
           disabled={selectedIds.length < 2}
         >
-          {selectedIds.length >= 2
-            ? '候補を確定してルーレットへ'
-            : '2件以上選んでください'}
+          ルーレットへ進む
         </button>
       </div>
     </section>
