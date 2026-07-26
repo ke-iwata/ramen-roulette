@@ -84,7 +84,7 @@ export default function App() {
         <p className="tagline">江戸川区近辺のラーメン屋をルーレットで決めよう</p>
         {screen === 'select' && (
           <button className="btn btn-maplink" onClick={openMap}>
-            🗺 マップで一覧を見る
+            🗺 マップから候補を探す
           </button>
         )}
       </header>

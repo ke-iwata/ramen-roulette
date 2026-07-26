@@ -177,7 +177,7 @@ export default function MapView({
     <section className="mapview">
       <div className="map-bar">
         <button className="btn btn-ghost" onClick={onBack}>
-          ← ルーレットに戻る
+          ← 一覧に戻る
         </button>
         <select
           className="station-select"

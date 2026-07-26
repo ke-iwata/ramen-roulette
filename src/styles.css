@@ -1130,6 +1130,26 @@ body {
   color: #5b4a42;
 }
 
+.mapview {
+  padding-bottom: 8px;
+}
+
+/* マップ画面の確定バーは地図に重ねず、下に置く */
 .mapview .confirm-bar {
+  position: static;
   margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .map-holder {
+    height: min(58vh, 420px);
+  }
+
+  .map-bar {
+    justify-content: space-between;
+  }
+
+  .station-select {
+    max-width: 58%;
+  }
 }
